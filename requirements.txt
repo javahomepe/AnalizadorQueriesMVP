@@ -1,0 +1,13 @@
+fastapi>=0.115,<1
+uvicorn[standard]>=0.34,<1
+fastmcp>=2.14,<3
+langchain>=1.0,<2
+langchain-openai>=1.0,<2
+langchain-mcp-adapters>=0.3,<1
+pydantic>=2.10,<3
+python-dotenv>=1.1,<2
+sqlglot>=26,<29
+openpyxl>=3.1,<4
+httpx>=0.28,<1
+pytest>=8.3,<10
+

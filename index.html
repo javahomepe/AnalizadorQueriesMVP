@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Analizador de riesgo SQL</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <p class="eyebrow">MVP educativo</p>
+      <h1>Analizador de riesgo SQL</h1>
+      <p>Evalúa una consulta de lectura antes de solicitar su ejecución en producción.</p>
+    </header>
+
+    <section class="notice" aria-label="Aviso">Usa únicamente datos sintéticos o autorizados. Este sistema no ejecuta SQL ni concede aprobaciones.</section>
+
+    <form id="analysis-form">
+      <div class="grid">
+        <label>Usuario<input id="usuario" value="ops.demo" required></label>
+        <label>Perfil<select id="perfil"><option>operador</option><option>analista</option><option>dba</option></select></label>
+        <label>Hora<input id="hora" type="time" value="09:00" required></label>
+        <label>Intención<select id="intencion"><option>consulta</option><option>descarga</option><option>proceso_batch</option></select></label>
+        <label>Esquema<input id="schema" value="query_analyzer" required></label>
+      </div>
+      <label>Consulta SQL<textarea id="query" rows="8" required>SELECT id, customer_id, status FROM query_analyzer.orders WHERE id = 42</textarea></label>
+      <button type="submit">Analizar riesgo</button>
+    </form>
+
+    <section class="result" aria-live="polite">
+      <div class="result-heading"><h2>Resultado</h2><span id="status">Listo</span></div>
+      <pre id="output">Completa el formulario para iniciar.</pre>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
+

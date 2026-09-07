@@ -1,0 +1,2 @@
+"""Aplicaciones ASGI del MVP."""
+

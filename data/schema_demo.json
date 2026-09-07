@@ -1,0 +1,73 @@
+{
+  "format_version": "1.0",
+  "database_name": "demo",
+  "engine": "postgres",
+  "generated_at": "2026-07-26T12:00:00Z",
+  "source_revision": "example-fictional-v1",
+  "objects": [
+    {
+      "kind": "table",
+      "schema": "query_analyzer",
+      "name": "customers",
+      "description": "Clientes ficticios usados únicamente como ejemplo.",
+      "columns": [
+        {"name": "id", "data_type": "bigint", "nullable": false},
+        {"name": "customer_code", "data_type": "varchar(30)", "nullable": false},
+        {"name": "status", "data_type": "varchar(20)", "nullable": false},
+        {"name": "created_at", "data_type": "timestamp", "nullable": false}
+      ],
+      "primary_key": ["id"],
+      "foreign_keys": [],
+      "indexes": [
+        {"name": "customers_pkey", "unique": true, "columns": ["id"]},
+        {"name": "customers_customer_code_uq", "unique": true, "columns": ["customer_code"]},
+        {"name": "customers_status_idx", "unique": false, "columns": ["status"]}
+      ],
+      "view_dependencies": []
+    },
+    {
+      "kind": "table",
+      "schema": "query_analyzer",
+      "name": "orders",
+      "description": "Órdenes ficticias usadas únicamente como ejemplo.",
+      "columns": [
+        {"name": "id", "data_type": "bigint", "nullable": false},
+        {"name": "customer_id", "data_type": "bigint", "nullable": false},
+        {"name": "status", "data_type": "varchar(20)", "nullable": false},
+        {"name": "total_amount", "data_type": "numeric(14,2)", "nullable": false},
+        {"name": "created_at", "data_type": "timestamp", "nullable": false}
+      ],
+      "primary_key": ["id"],
+      "foreign_keys": [
+        {
+          "name": "orders_customer_fk",
+          "columns": ["customer_id"],
+          "referenced_schema": "query_analyzer",
+          "referenced_table": "customers",
+          "referenced_columns": ["id"]
+        }
+      ],
+      "indexes": [
+        {"name": "orders_pkey", "unique": true, "columns": ["id"]},
+        {"name": "orders_customer_created_idx", "unique": false, "columns": ["customer_id", "created_at"]},
+        {"name": "orders_status_idx", "unique": false, "columns": ["status"]}
+      ],
+      "view_dependencies": []
+    },
+    {
+      "kind": "view",
+      "schema": "query_analyzer",
+      "name": "customer_order_summary",
+      "description": "Vista ficticia de resumen de órdenes por cliente.",
+      "columns": [
+        {"name": "customer_id", "data_type": "bigint", "nullable": false},
+        {"name": "order_count", "data_type": "bigint", "nullable": false},
+        {"name": "total_amount", "data_type": "numeric(18,2)", "nullable": true}
+      ],
+      "primary_key": [],
+      "foreign_keys": [],
+      "indexes": [],
+      "view_dependencies": ["query_analyzer.customers", "query_analyzer.orders"]
+    }
+  ]
+}

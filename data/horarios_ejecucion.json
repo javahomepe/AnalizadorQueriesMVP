@@ -1,0 +1,45 @@
+{
+  "format_version": "1.0",
+  "policy_name": "horarios_ejecucion_poc",
+  "timezone": "America/Lima",
+  "time_format": "HH:MM",
+  "execution_windows": [
+    {
+      "query_class": "liviano",
+      "start_time": "08:30",
+      "end_time": "17:30",
+      "crosses_midnight": false,
+      "description": "Consultas livianas permitidas durante el horario laboral."
+    },
+    {
+      "query_class": "pesado",
+      "start_time": "22:00",
+      "end_time": "06:00",
+      "crosses_midnight": true,
+      "description": "Consultas pesadas permitidas únicamente durante la ventana nocturna."
+    }
+  ],
+  "outside_window_action": "observar",
+  "classification": {
+    "method": "static_ast_heuristic",
+    "light_when": [
+      "SELECT sobre una sola tabla",
+      "sin JOIN",
+      "sin subconsultas",
+      "sin GROUP BY, ORDER BY o DISTINCT",
+      "con filtro WHERE",
+      "sin SELECT *"
+    ],
+    "heavy_when_any": [
+      "más de una tabla",
+      "JOIN",
+      "subconsulta",
+      "GROUP BY",
+      "ORDER BY",
+      "DISTINCT",
+      "SELECT *",
+      "consulta sin WHERE"
+    ],
+    "disclaimer": "La clasificación es una estimación estática para la PoC y no reemplaza EXPLAIN ni métricas reales de ejecución."
+  }
+}

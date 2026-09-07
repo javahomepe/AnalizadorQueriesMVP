@@ -1,0 +1,134 @@
+{
+  "document_type": "query_technical_policies",
+  "version": "1.0.0",
+  "environment": "produccion",
+  "timezone": "America/Lima",
+  "disclaimer": "Datos y usuarios sintéticos para la PoC. No representan incidentes reales.",
+  "profiles": {
+    "analista": {
+      "allowed_query_types": ["select_detail", "select_aggregate"],
+      "max_estimated_rows_scanned": 100000,
+      "max_download_rows": 50000,
+      "max_joined_tables": 3,
+      "temporary_tables": "requires_dba_approval",
+      "production_access_window": "08:30-17:30"
+    },
+    "operador": {
+      "allowed_query_types": ["select_detail", "select_aggregate", "batch_read"],
+      "max_estimated_rows_scanned": 500000,
+      "max_download_rows": 100000,
+      "max_joined_tables": 5,
+      "temporary_tables": "requires_dba_approval",
+      "production_access_window": "08:30-17:30"
+    },
+    "dba": {
+      "allowed_query_types": ["select_detail", "select_aggregate", "batch_read", "explain"],
+      "max_estimated_rows_scanned": 10000000,
+      "max_download_rows": 1000000,
+      "max_joined_tables": 10,
+      "temporary_tables": "allowed_with_change_ticket",
+      "production_access_window": "00:00-23:59"
+    }
+  },
+  "users": [
+    {"user_id": "ana.analista", "profile": "analista", "status": "active", "risk_level": "medium"},
+    {"user_id": "ops.demo", "profile": "operador", "status": "active", "risk_level": "low"},
+    {"user_id": "dba.demo", "profile": "dba", "status": "active", "risk_level": "low"}
+  ],
+  "policies": [
+    {
+      "id": "POL-VOL-001",
+      "category": "volumetria",
+      "severity": "high",
+      "rule": "La volumetría estimada no debe exceder max_estimated_rows_scanned del perfil.",
+      "approval_trigger": "estimated_rows_above_profile_limit"
+    },
+    {
+      "id": "POL-QRY-001",
+      "category": "tipos_query",
+      "severity": "critical",
+      "rule": "El tipo de consulta debe estar incluido en allowed_query_types del perfil.",
+      "approval_trigger": "query_type_not_allowed"
+    },
+    {
+      "id": "POL-DWN-001",
+      "category": "descargas_masivas",
+      "severity": "critical",
+      "rule": "Una descarga no debe superar max_download_rows; debe usar paginación, exportación controlada y aprobación DBA cuando exceda el límite.",
+      "approval_trigger": "download_above_profile_limit"
+    },
+    {
+      "id": "POL-TMP-001",
+      "category": "tablas_temporales",
+      "severity": "high",
+      "rule": "SELECT INTO TEMP y CREATE TEMP requieren aprobación DBA en producción y una estrategia explícita de limpieza.",
+      "approval_trigger": "temporary_table_in_production"
+    },
+    {
+      "id": "POL-JOIN-001",
+      "category": "cruce_tablas",
+      "severity": "high",
+      "rule": "El número de tablas cruzadas no debe superar max_joined_tables del perfil; los JOIN deben usar columnas relacionadas e indexadas.",
+      "approval_trigger": "joined_tables_above_profile_limit"
+    },
+    {
+      "id": "POL-SCAN-001",
+      "category": "full_scan",
+      "severity": "high",
+      "rule": "Consultas sobre tablas voluminosas sin WHERE, o con filtros no selectivos, requieren revisión DBA.",
+      "approval_trigger": "large_table_without_filter"
+    },
+    {
+      "id": "POL-INC-001",
+      "category": "incidentes_operativos",
+      "severity": "high",
+      "rule": "Usuarios con dos o más incidentes operativos en 90 días requieren revisión DBA reforzada.",
+      "approval_trigger": "recurrent_query_incidents"
+    },
+    {
+      "id": "POL-SEC-001",
+      "category": "incidentes_seguridad",
+      "severity": "critical",
+      "rule": "Un incidente de seguridad abierto o crítico obliga a detener y escalar al DBA y a Seguridad.",
+      "approval_trigger": "open_or_critical_security_incident"
+    }
+  ],
+  "query_incidents": [
+    {
+      "incident_id": "QRY-2026-001",
+      "user_id": "ana.analista",
+      "date": "2026-07-12",
+      "severity": "high",
+      "type": "full_scan",
+      "status": "closed",
+      "summary": "Consulta sin filtro produjo saturación de I/O durante 18 minutos."
+    },
+    {
+      "incident_id": "QRY-2026-002",
+      "user_id": "ana.analista",
+      "date": "2026-08-18",
+      "severity": "medium",
+      "type": "massive_download",
+      "status": "closed",
+      "summary": "Exportación superior al límite del perfil generó degradación temporal."
+    }
+  ],
+  "security_incidents": [
+    {
+      "incident_id": "SEC-2026-001",
+      "user_id": "ana.analista",
+      "date": "2026-08-25",
+      "severity": "high",
+      "type": "sensitive_data_scope",
+      "status": "open",
+      "summary": "Intento de consultar columnas fuera del alcance autorizado; investigación en curso."
+    }
+  ],
+  "approval": {
+    "required_when_any_policy_triggered": true,
+    "allowed_decisions": ["approve", "reject"],
+    "required_reviewer_role": "dba",
+    "security_escalation_for_critical": true,
+    "approval_expiration_minutes": 30
+  }
+}
