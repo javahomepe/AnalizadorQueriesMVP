@@ -37,7 +37,7 @@ OPENROUTER_API_KEY=su_clave
 APP_ACCESS_KEY=una-clave-larga-y-aleatoria
 ```
 
-El modelo predeterminado es `openrouter/free`, que permite a OpenRouter escoger una ruta gratuita compatible con tools. Para una demostración estable se recomienda definir un modelo específico compatible con tool calling. `.env` está excluido de Git.
+El modelo predeterminado es `nvidia/nemotron-3-super-120b-a12b:free`, seleccionado explícitamente por su soporte de tool calling. `.env` está excluido de Git.
 
 ## Ejecución
 
@@ -71,7 +71,7 @@ Configure en Vercel, para Production, Preview y Development:
 ```text
 OPENROUTER_API_KEY=<secreto>
 APP_ACCESS_KEY=<secreto largo y aleatorio>
-MODEL_ID=openrouter/free
+MODEL_ID=nvidia/nemotron-3-super-120b-a12b:free
 ```
 
 No configure `MCP_URL` en Vercel: la aplicación deriva automáticamente la URL MCP del despliegue actual. Después despliegue desde el repositorio conectado o con `vercel --prod`.

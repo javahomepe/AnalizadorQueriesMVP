@@ -22,7 +22,7 @@ class Settings:
     @classmethod
     def from_env(cls) -> "Settings":
         return cls(
-            model_id=os.getenv("MODEL_ID", "openrouter/free"),
+            model_id=os.getenv("MODEL_ID", "nvidia/nemotron-3-super-120b-a12b:free"),
             openrouter_api_key=os.getenv("OPENROUTER_API_KEY", "").strip(),
             openrouter_base_url=os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/"),
             mcp_url=os.getenv("MCP_URL", "http://127.0.0.1:8001/"),
