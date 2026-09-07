@@ -2,9 +2,20 @@ const form = document.querySelector("#analysis-form");
 const output = document.querySelector("#output");
 const statusBadge = document.querySelector("#status");
 const button = form.querySelector("button");
+const accessKey = document.querySelector("#access-key");
+
+accessKey.value = sessionStorage.getItem("analizador-access-key") || "";
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  const key = accessKey.value.trim();
+  if (!key) {
+    output.textContent = "Ingrese la clave de acceso de la demostración.";
+    statusBadge.textContent = "Protegido";
+    accessKey.focus();
+    return;
+  }
+  sessionStorage.setItem("analizador-access-key", key);
   const pregunta = [
     "Analiza el riesgo de esta consulta SQL de producción.",
     `Usuario: ${document.querySelector("#usuario").value}.`,
@@ -22,7 +33,7 @@ form.addEventListener("submit", async (event) => {
   try {
     const response = await fetch("/api/chat", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {"Content-Type": "application/json", "X-API-Key": key},
       body: JSON.stringify({pregunta}),
     });
     const payload = await response.json();
@@ -36,4 +47,3 @@ form.addEventListener("submit", async (event) => {
     button.disabled = false;
   }
 });
-

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 from langchain.agents import create_agent
@@ -21,24 +22,32 @@ async def discover_tools(settings: Settings | None = None) -> list[Any]:
         "query_risk": {
             "transport": "http",
             "url": settings.mcp_url,
+            "headers": {"X-API-Key": settings.access_key} if settings.access_key else {},
         }
     })
     try:
         tools = await client.get_tools()
     except Exception as exc:
-        raise AgentUnavailableError("El servidor MCP no está disponible. Inicie api.mcp en el puerto 8001.") from exc
+        raise AgentUnavailableError("El servidor MCP no está disponible o rechazó la autenticación.") from exc
     if not any(tool.name == "analizar_riesgo_query" for tool in tools):
         raise AgentUnavailableError("MCP respondió, pero no publicó la tool analizar_riesgo_query.")
     return tools
 
 
-async def responder(pregunta: str, settings: Settings | None = None) -> str:
+async def responder(
+    pregunta: str,
+    settings: Settings | None = None,
+    *,
+    mcp_url: str | None = None,
+) -> str:
     pregunta = pregunta.strip() if isinstance(pregunta, str) else ""
     if not pregunta:
         raise ValueError("La pregunta es obligatoria.")
     if len(pregunta) > 25_000:
         raise ValueError("La pregunta supera el límite permitido.")
     settings = settings or Settings.from_env()
+    if mcp_url:
+        settings = replace(settings, mcp_url=mcp_url)
     require_openrouter_key(settings)
     tools = await discover_tools(settings)
     model = ChatOpenAI(
@@ -48,7 +57,7 @@ async def responder(pregunta: str, settings: Settings | None = None) -> str:
         temperature=0,
         timeout=settings.llm_timeout_seconds,
         max_retries=1,
-        default_headers={"HTTP-Referer": "http://localhost:8000", "X-Title": "AnalizadorQueriesMVP"},
+        default_headers={"HTTP-Referer": mcp_url or "http://localhost:8000", "X-Title": "AnalizadorQueriesMVP"},
     )
     agent = create_agent(model=model, tools=tools, system_prompt=SYSTEM_PROMPT, name="query_risk_agent")
     try:
@@ -62,4 +71,3 @@ async def responder(pregunta: str, settings: Settings | None = None) -> str:
     if isinstance(final, list):
         final = "\n".join(str(block.get("text", "")) if isinstance(block, dict) else str(block) for block in final)
     return str(final).strip() or "El agente no produjo una respuesta final verificable."
-

@@ -1,6 +1,6 @@
 # Analizador de riesgo SQL MVP
 
-MVP local que permite evaluar una consulta PostgreSQL de lectura desde el navegador. Un agente LangChain descubre por HTTP una única tool FastMCP, consulta evidencia sintética y comunica si la solicitud necesita aprobación del DBA. El sistema no ejecuta SQL.
+MVP local y desplegable en Vercel que permite evaluar una consulta PostgreSQL de lectura desde el navegador. Un agente LangChain descubre por HTTP una única tool FastMCP, consulta evidencia sintética y comunica si la solicitud necesita aprobación del DBA. El sistema no ejecuta SQL.
 
 ## Arquitectura
 
@@ -34,9 +34,10 @@ Edite `.env` y defina únicamente:
 
 ```text
 OPENROUTER_API_KEY=su_clave
+APP_ACCESS_KEY=una-clave-larga-y-aleatoria
 ```
 
-El modelo predeterminado es `openrouter/free`, que permite a OpenRouter escoger una ruta gratuita compatible con tools. `.env` está excluido de Git.
+El modelo predeterminado es `openrouter/free`, que permite a OpenRouter escoger una ruta gratuita compatible con tools. Para una demostración estable se recomienda definir un modelo específico compatible con tool calling. `.env` está excluido de Git.
 
 ## Ejecución
 
@@ -53,6 +54,29 @@ Terminal 2, backend y frontend:
 ```
 
 Abra `http://127.0.0.1:8000`.
+
+También puede ejecutar la aplicación unificada que replica la topología de Vercel:
+
+```powershell
+Remove-Item Env:MCP_URL -ErrorAction SilentlyContinue
+.\.venv\Scripts\python.exe -m uvicorn app:app --reload --port 8000
+```
+
+## Despliegue en Vercel
+
+El punto de entrada es `app.py`. La aplicación publica la interfaz, `/api/chat`, `/api/health` y el servidor MCP stateless en `/api/mcp/` dentro de una sola función FastAPI.
+
+Configure en Vercel, para Production, Preview y Development:
+
+```text
+OPENROUTER_API_KEY=<secreto>
+APP_ACCESS_KEY=<secreto largo y aleatorio>
+MODEL_ID=openrouter/free
+```
+
+No configure `MCP_URL` en Vercel: la aplicación deriva automáticamente la URL MCP del despliegue actual. Después despliegue desde el repositorio conectado o con `vercel --prod`.
+
+La página es visible, pero `/api/chat` y `/api/mcp/` rechazan cualquier solicitud sin `X-API-Key` o `Authorization: Bearer`. La interfaz mantiene la clave únicamente en `sessionStorage`; no se incorpora al código ni a Git.
 
 ## Pruebas
 
@@ -93,10 +117,9 @@ Los datos son ficticios y no deben sustituirse por datos personales o credencial
 - No accede a Supabase ni recibe contraseñas de base de datos.
 - No implementa una aprobación persistente; solo indica cuándo el DBA debe intervenir.
 - FastMCP es stateless; no guarda conversación ni decisiones.
-- Vercel es opcional y no está configurado en esta versión.
+- El almacenamiento de Vercel es efímero y de solo lectura salvo `/tmp`; este MVP únicamente lee los metadatos empaquetados.
 - La disponibilidad y latencia de modelos gratuitos de OpenRouter pueden variar.
 
 ## Continuidad con la PoC
 
 Se reutilizó la capacidad demostrada de AST, selección de metadatos, clasificación horaria y políticas por usuario. Se dejaron fuera del MVP: conexión productiva, `EXPLAIN`, ejecución SQL, múltiples motores, Docker, auditoría WORM y Human-in-the-Loop persistente. Estas piezas pueden incorporarse después de validar el flujo MCP completo.
-

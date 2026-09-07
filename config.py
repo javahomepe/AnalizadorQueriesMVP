@@ -17,6 +17,7 @@ class Settings:
     mcp_url: str
     mcp_timeout_seconds: float
     llm_timeout_seconds: float
+    access_key: str
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -27,6 +28,7 @@ class Settings:
             mcp_url=os.getenv("MCP_URL", "http://127.0.0.1:8001/"),
             mcp_timeout_seconds=float(os.getenv("MCP_TIMEOUT_SECONDS", "30")),
             llm_timeout_seconds=float(os.getenv("LLM_TIMEOUT_SECONDS", "90")),
+            access_key=os.getenv("APP_ACCESS_KEY", "").strip(),
         )
 
 
@@ -34,3 +36,7 @@ def require_openrouter_key(settings: Settings) -> None:
     if not settings.openrouter_api_key:
         raise RuntimeError("OPENROUTER_API_KEY no está configurada. Copie .env.example a .env y defina la clave.")
 
+
+def require_access_key(settings: Settings) -> None:
+    if not settings.access_key:
+        raise RuntimeError("APP_ACCESS_KEY no está configurada.")
