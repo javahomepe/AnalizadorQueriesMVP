@@ -2,7 +2,7 @@
 
 ## Producto
 
-MVP educativo para que analistas y operadores evalúen el riesgo de una consulta SQL de lectura antes de solicitar su ejecución en producción.
+MVP para que analistas y operadores evalúen el riesgo de una consulta SQL de lectura antes de solicitar su ejecución en producción.
 
 ## Alcance
 
